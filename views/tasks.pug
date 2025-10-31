@@ -1,0 +1,18 @@
+doctype html
+html
+  head
+    meta(charset="UTF-8")
+    meta(name="viewport", content="width=device-width, initial-scale=1.0")
+    title To-Do List
+    link(rel="stylesheet", href="/style.css")
+  body
+    .container
+      h1 Список завдань 📝
+
+      form#taskForm
+        input#taskInput(type="text" placeholder="Введіть нову задачу..." required)
+        button(type="submit") ➕ Додати
+
+      ul#taskList
+
+    script(src="/script.js")
