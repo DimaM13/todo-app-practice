@@ -2,8 +2,19 @@ doctype html
 html
   head
     meta(charset="UTF-8")
-    title
-      block title
+    title Список Справ
+    // Підключення твоїх стилів (лежать в корені public)
+    link(rel='stylesheet', href='/style.css')
+    // Стилі для сповіщень iziToast (CDN)
+    link(rel='stylesheet', href='https://cdnjs.cloudflare.com/ajax/libs/izitoast/1.4.0/css/iziToast.min.css')
   body
-    h1 Список задач (To-Do List)
+    h1 Список Справ (To-Do List)
+    
+    // Сюда буде вставлено контент з tasks.pug
     block content
+
+    // Скрипт бібліотеки iziToast (CDN)
+    script(src='https://cdnjs.cloudflare.com/ajax/libs/izitoast/1.4.0/js/iziToast.min.js')
+    
+    // Твій головний скрипт з логікою
+    script(src='/main.js')

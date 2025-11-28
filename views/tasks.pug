@@ -1,18 +1,23 @@
-doctype html
-html
-  head
-    meta(charset="UTF-8")
-    meta(name="viewport", content="width=device-width, initial-scale=1.0")
-    title To-Do List
-    link(rel="stylesheet", href="/style.css")
-  body
-    .container
-      h1 Список завдань 📝
+extends layout
 
-      form#taskForm
-        input#taskInput(type="text" placeholder="Введіть нову задачу..." required)
-        button(type="submit") ➕ Додати
+block content
+  div.container
+    div.form-group
+      input#taskInput(type="text" placeholder="Введіть нову задачу...")
+      button#addTaskBtn Додати
 
-      ul#taskList
-
-    script(src="/script.js")
+    h2 Ваші задачі:
+    ul#taskList
+      if tasks.length === 0
+        li.empty-message Поки що немає задач
+      else
+        each task in tasks
+          // Додаємо клас 'completed', якщо задача виконана
+          li(class=task.completed ? 'completed' : '')
+            div.task-info
+              // Чекбокс викликає функцію toggleTask при кліку
+              input(type="checkbox" checked=task.completed onchange=`toggleTask(${task.id})`)
+              span.task-title= task.title
+            
+            // Кнопка видалення викликає deleteTask
+            button.delete-btn(onclick=`deleteTask(${task.id})`) ✕

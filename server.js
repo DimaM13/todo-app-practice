@@ -1,55 +1,69 @@
 const express = require('express');
 const path = require('path');
+const Joi = require('joi');
+
 const app = express();
-const port = 3000;
 
 app.use(express.json());
-app.use(express.static(path.join(__dirname, 'public'))); // ✅ для CSS и JS
-
-let tasks = [
-  { id: 1, title: 'Вивчити Express.js', completed: false },
-  { id: 2, title: 'Створити шаблон Pug', completed: true }
-];
-let nextId = 3;
-
-// Pug налаштування
+app.use(express.urlencoded({ extended: true }));
+app.use(express.static(path.join(__dirname, 'public')));
 app.set('view engine', 'pug');
-app.set('views', './views');
+app.set('views', path.join(__dirname, 'views'));
 
-// --- API ---
+// Тимчасова база даних
+let tasks = [];
+
+const taskSchema = Joi.object({
+    title: Joi.string().min(3).max(100).required()
+});
+
+app.get('/', (req, res) => {
+    res.render('tasks', { tasks }); 
+});
+
 app.get('/api/tasks', (req, res) => {
-  res.json(tasks);
+    res.json(tasks);
 });
 
+// 1. Додавання задачі
 app.post('/api/tasks', (req, res) => {
-  const { title } = req.body;
-  if (!title) return res.status(400).json({ error: 'Title is required' });
+    const { error, value } = taskSchema.validate(req.body);
+    if (error) return res.status(400).json({ message: error.details[0].message });
 
-  const newTask = { id: nextId++, title, completed: false };
-  tasks.push(newTask);
-  res.status(201).json(newTask);
+    const newTask = {
+        id: Date.now(),
+        title: value.title,
+        completed: false
+    };
+    tasks.push(newTask);
+    res.status(201).json({ message: 'Задачу успішно створено!', task: newTask });
 });
 
-app.put('/api/tasks/:id', (req, res) => {
-  const id = parseInt(req.params.id);
-  const task = tasks.find(t => t.id === id);
-  if (!task) return res.status(404).json({ error: 'Task not found' });
+// 2. Зміна статусу (Виконано / Не виконано)
+app.patch('/api/tasks/:id', (req, res) => {
+    const id = parseInt(req.params.id);
+    const task = tasks.find(t => t.id === id);
 
-  task.completed = !task.completed;
-  res.json(task);
+    if (!task) return res.status(404).json({ message: 'Задачу не знайдено' });
+
+    task.completed = !task.completed; // Перемикаємо true/false
+    res.json({ message: 'Статус оновлено', task });
 });
 
+// 3. Видалення задачі
 app.delete('/api/tasks/:id', (req, res) => {
-  const id = parseInt(req.params.id);
-  const index = tasks.findIndex(t => t.id === id);
-  if (index === -1) return res.status(404).json({ error: 'Task not found' });
+    const id = parseInt(req.params.id);
+    const initialLength = tasks.length;
+    tasks = tasks.filter(t => t.id !== id);
 
-  tasks.splice(index, 1);
-  res.sendStatus(204);
+    if (tasks.length === initialLength) {
+        return res.status(404).json({ message: 'Задачу не знайдено' });
+    }
+
+    res.json({ message: 'Задачу видалено' });
 });
 
-// --- UI ---
-app.get('/', (req, res) => res.redirect('/tasks'));
-app.get('/tasks', (req, res) => res.render('tasks'));
-
-app.listen(port, () => console.log(`✅ Сервер працює: http://localhost:${port}`));
+const PORT = 3000;
+app.listen(PORT, () => {
+    console.log(`Сервер працює на http://localhost:${PORT}`);
+});
